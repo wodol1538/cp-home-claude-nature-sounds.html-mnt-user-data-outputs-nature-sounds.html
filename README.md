@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nature Sounds - Birds & Animals</title>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;600&family=Karla:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --forest-dark: #1a3a2e;
+            --forest-medium: #2d5a47;
+            --moss: #6b8f71;
+            --leaf: #9cb896;
+            --sky: #e8f4f0;
+            --earth: #8b7355;
+            --sunset: #d4a574;
+            --water: #7ba3a8;
+        }
+
+        body {
+            font-family: 'Karla', sans-serif;
+            background: linear-gradient(135deg, var(--sky) 0%, #c8e6dc 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(107, 143, 113, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(123, 163, 168, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        h1 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 3.5rem;
+            font-weight: 300;
+            color: var(--forest-dark);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--forest-medium);
+            font-weight: 400;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            animation: fadeIn 1s ease-out 0.3s backwards;
+        }
+
+        .control-btn {
+            padding: 0.75rem 2rem;
+            border: 2px solid var(--forest-medium);
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            color: var(--forest-dark);
+            font-family: 'Karla', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .control-btn:hover {
+            background: var(--forest-medium);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(26, 58, 46, 0.2);
+        }
+
+        .control-btn.active {
+            background: var(--forest-dark);
+            color: white;
+            border-color: var(--forest-dark);
+        }
+
+        .sounds-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .sound-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out backwards;
+        }
+
+        .sound-card:nth-child(1) { animation-delay: 0.1s; }
+        .sound-card:nth-child(2) { animation-delay: 0.2s; }
+        .sound-card:nth-child(3) { animation-delay: 0.3s; }
+        .sound-card:nth-child(4) { animation-delay: 0.4s; }
+        .sound-card:nth-child(5) { animation-delay: 0.5s; }
+        .sound-card:nth-child(6) { animation-delay: 0.6s; }
+        .sound-card:nth-child(7) { animation-delay: 0.7s; }
+        .sound-card:nth-child(8) { animation-delay: 0.8s; }
+        .sound-card:nth-child(9) { animation-delay: 0.9s; }
+
+        .sound-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--moss) 0%, var(--water) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 0;
+        }
+
+        .sound-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(26, 58, 46, 0.2);
+            border-color: var(--moss);
+        }
+
+        .sound-card.playing {
+            border-color: var(--forest-medium);
+            background: rgba(107, 143, 113, 0.15);
+        }
+
+        .sound-card.playing::before {
+            opacity: 0.1;
+        }
+
+        .sound-card-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+            transition: transform 0.4s ease;
+        }
+
+        .sound-card:hover .icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .sound-card.playing .icon {
+            animation: bounce 1s ease-in-out infinite;
+        }
+
+        .sound-name {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--forest-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .sound-description {
+            font-size: 0.9rem;
+            color: var(--forest-medium);
+            line-height: 1.5;
+        }
+
+        .volume-control {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            text-align: center;
+            animation: fadeIn 1s ease-out 0.8s backwards;
+        }
+
+        .volume-label {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.2rem;
+            color: var(--forest-dark);
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .volume-slider {
+            width: 100%;
+            max-width: 400px;
+            height: 8px;
+            border-radius: 10px;
+            background: var(--sky);
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--forest-medium);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .volume-slider::-webkit-slider-thumb:hover {
+            background: var(--forest-dark);
+            transform: scale(1.2);
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--forest-medium);
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .volume-slider::-moz-range-thumb:hover {
+            background: var(--forest-dark);
+            transform: scale(1.2);
+        }
+
+        .status {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--moss);
+            font-style: italic;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: scale(1) rotate(0deg);
+            }
+            50% {
+                transform: scale(1.1) rotate(5deg);
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .sounds-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Nature Sounds</h1>
+            <p class="subtitle">Birds & Animals of the Wild</p>
+        </header>
+
+        <div class="controls">
+            <button class="control-btn" id="playAllBtn">Play All</button>
+            <button class="control-btn" id="stopAllBtn">Stop All</button>
+        </div>
+
+        <div class="sounds-grid" id="soundsGrid"></div>
+
+        <div class="volume-control">
+            <label class="volume-label" for="volumeSlider">Master Volume</label>
+            <input type="range" id="volumeSlider" class="volume-slider" min="0" max="100" value="70">
+            <div class="status" id="status">Click any sound to play</div>
+        </div>
+    </div>
+
+    <script>
+        const sounds = [
+            {
+                name: 'Forest Birds',
+                icon: '🦜',
+                description: 'Melodic chirping of woodland birds',
+                frequency: 'chirp',
+                duration: 200,
+                interval: 800
+            },
+            {
+                name: 'Owl Hoot',
+                icon: '🦉',
+                description: 'Deep hooting in the night',
+                frequency: 'hoot',
+                duration: 400,
+                interval: 2000
+            },
+            {
+                name: 'Wolf Howl',
+                icon: '🐺',
+                description: 'Haunting howl across the wilderness',
+                frequency: 'howl',
+                duration: 1500,
+                interval: 4000
+            },
+            {
+                name: 'Cricket Song',
+                icon: '🦗',
+                description: 'Rhythmic chirping of crickets',
+                frequency: 'cricket',
+                duration: 100,
+                interval: 300
+            },
+            {
+                name: 'Frog Croak',
+                icon: '🐸',
+                description: 'Deep croaking by the pond',
+                frequency: 'croak',
+                duration: 300,
+                interval: 1200
+            },
+            {
+                name: 'Eagle Call',
+                icon: '🦅',
+                description: 'Majestic cry of an eagle',
+                frequency: 'screech',
+                duration: 600,
+                interval: 3000
+            },
+            {
+                name: 'Bear Growl',
+                icon: '🐻',
+                description: 'Powerful growl from the forest',
+                frequency: 'growl',
+                duration: 800,
+                interval: 5000
+            },
+            {
+                name: 'Duck Quack',
+                icon: '🦆',
+                description: 'Cheerful quacking by the lake',
+                frequency: 'quack',
+                duration: 200,
+                interval: 1000
+            },
+            {
+                name: 'Bee Buzz',
+                icon: '🐝',
+                description: 'Busy buzzing through flowers',
+                frequency: 'buzz',
+                duration: 150,
+                interval: 400
+            }
+        ];
+
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const activeSounds = new Map();
+        let masterVolume = 0.7;
+
+        function createSound(type, frequency, duration) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            switch(type) {
+                case 'chirp':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(2000 + Math.random() * 1000, audioContext.currentTime);
+                    gainNode.gain.setValueAtTime(masterVolume * 0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+                    break;
+                case 'hoot':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+                    oscillator.frequency.linearRampToValueAtTime(250, audioContext.currentTime + duration / 2000);
+                    gainNode.gain.setValueAtTime(masterVolume * 0.4, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+                    break;
+                case 'howl':
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                    oscillator.frequency.linearRampToValueAtTime(300, audioContext.currentTime + duration / 1000);
+                    gainNode.gain.setValueAtTime(masterVolume * 0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+                    break;
+                case 'cricket':
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(4000, audioContext.currentTime);
+                    gainNode.gain.setValueAtTime(masterVolume * 0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+                    break;
+                case 'croak':
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+                    oscillator.frequency.linearRampToValueAtTime(150, audioContext.currentTime + duration / 2000);
+                    gainNode.gain.setValueAtTime(masterVolume * 0.5, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+                    break;
+                case 'screech':
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(1500, audioContext.currentTime);
+                    oscillator.frequency.linearRampToValueAtTime(1200, audioContext.currentTime + duration / 1000);
+                    gainNode.gain.setValueAtTime(masterVolume * 0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+                    break;
+                case 'growl':
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(100, audioContext.currentTime);
+                    oscillator.frequency.linearRampToValueAtTime(80, audioContext.currentTime + duration / 1000);
+                    gainNode.gain.setValueAtTime(masterVolume * 0.6, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+                    break;
+                case 'quack':
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                    gainNode.gain.setValueAtTime(masterVolume * 0.4, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+                    break;
+                case 'buzz':
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(250 + Math.random() * 100, audioContext.currentTime);
+                    gainNode.gain.setValueAtTime(masterVolume * 0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+                    break;
+            }
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration / 1000);
+            
+            return { oscillator, gainNode };
+        }
+
+        function startSound(sound, card) {
+            if (activeSounds.has(sound.name)) return;
+            
+            card.classList.add('playing');
+            
+            const playLoop = () => {
+                createSound(sound.frequency, sound.duration, sound.duration);
+                const timeout = setTimeout(playLoop, sound.interval);
+                activeSounds.set(sound.name, { timeout, card });
+            };
+            
+            playLoop();
+            updateStatus(`Playing: ${sound.name}`);
+        }
+
+        function stopSound(soundName) {
+            const active = activeSounds.get(soundName);
+            if (active) {
+                clearTimeout(active.timeout);
+                active.card.classList.remove('playing');
+                activeSounds.delete(soundName);
+            }
+        }
+
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+
+        // Render sound cards
+        const grid = document.getElementById('soundsGrid');
+        sounds.forEach(sound => {
+            const card = document.createElement('div');
+            card.className = 'sound-card';
+            card.innerHTML = `
+                <div class="sound-card-content">
+                    <span class="icon">${sound.icon}</span>
+                    <h3 class="sound-name">${sound.name}</h3>
+                    <p class="sound-description">${sound.description}</p>
+                </div>
+            `;
+            
+            card.addEventListener('click', () => {
+                if (activeSounds.has(sound.name)) {
+                    stopSound(sound.name);
+                    updateStatus('Sound stopped');
+                } else {
+                    startSound(sound, card);
+                }
+            });
+            
+            grid.appendChild(card);
+        });
+
+        // Controls
+        document.getElementById('playAllBtn').addEventListener('click', () => {
+            const cards = document.querySelectorAll('.sound-card');
+            sounds.forEach((sound, index) => {
+                if (!activeSounds.has(sound.name)) {
+                    setTimeout(() => startSound(sound, cards[index]), index * 200);
+                }
+            });
+            updateStatus('Playing all sounds');
+        });
+
+        document.getElementById('stopAllBtn').addEventListener('click', () => {
+            sounds.forEach(sound => stopSound(sound.name));
+            updateStatus('All sounds stopped');
+        });
+
+        // Volume control
+        document.getElementById('volumeSlider').addEventListener('input', (e) => {
+            masterVolume = e.target.value / 100;
+            updateStatus(`Volume: ${e.target.value}%`);
+        });
+    </script>
+</body>
+</html>
